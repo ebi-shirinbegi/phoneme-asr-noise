@@ -1,0 +1,75 @@
+stages:
+  download_fr:
+    cmd: pixi run python src/download_data.py fr 50 42
+    params:
+      - languages
+      - n_utterances
+      - seed
+    outs:
+      - data/raw/fr/wav
+      - data/manifests/fr/clean.jsonl
+
+  download_de:
+    cmd: pixi run python src/download_data.py de 50 42
+    params:
+      - languages
+      - n_utterances
+      - seed
+    outs:
+      - data/raw/de/wav
+      - data/manifests/de/clean.jsonl
+
+  phonemize_fr:
+    cmd: pixi run python src/phonemize.py fr data/manifests/fr/clean.jsonl data/manifests/fr/phonemized.jsonl
+    deps:
+      - src/phonemize.py
+      - data/manifests/fr/clean.jsonl
+    outs:
+      - data/manifests/fr/phonemized.jsonl
+
+  phonemize_de:
+    cmd: pixi run python src/phonemize.py de data/manifests/de/clean.jsonl data/manifests/de/phonemized.jsonl
+    deps:
+      - src/phonemize.py
+      - data/manifests/de/clean.jsonl
+    outs:
+      - data/manifests/de/phonemized.jsonl
+
+  run_all_fr:
+    cmd: pixi run python src/run_all_snr.py fr
+    deps:
+      - src/add_noise.py
+      - src/predict.py
+      - src/evaluate.py
+      - src/run_all_snr.py
+      - data/manifests/fr/phonemized.jsonl
+    params:
+      - snr_levels
+      - seed
+      - model_name
+    outs:
+      - data/metrics/fr
+
+  run_all_de:
+    cmd: pixi run python src/run_all_snr.py de
+    deps:
+      - src/add_noise.py
+      - src/predict.py
+      - src/evaluate.py
+      - src/run_all_snr.py
+      - data/manifests/de/phonemized.jsonl
+    params:
+      - snr_levels
+      - seed
+      - model_name
+    outs:
+      - data/metrics/de
+
+  plot:
+    cmd: pixi run python src/plot.py data/metrics data/figures/per_vs_snr.png
+    deps:
+      - src/plot.py
+      - data/metrics/fr
+      - data/metrics/de
+    plots:
+      - data/figures/per_vs_snr.png
