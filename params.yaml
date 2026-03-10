@@ -5,6 +5,9 @@ languages:
   de:
     mls_name: german
     espeak_voice: de
+  es:
+    mls_name: spanish
+    espeak_voice: es
 
 snr_levels:
   - 30
