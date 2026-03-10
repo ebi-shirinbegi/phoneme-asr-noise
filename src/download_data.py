@@ -5,13 +5,9 @@ import sys
 import tempfile
 import os
 from pathlib import Path
+import yaml
 from datasets import load_dataset
 import soundfile as sf
-
-LANG_MAP = {
-    "fr": "french",
-    "de": "german",
-}
 
 
 def get_md5(path):
@@ -20,19 +16,23 @@ def get_md5(path):
 
 def main():
     lang = sys.argv[1]
-    n_utterances = int(sys.argv[2])
-    seed = int(sys.argv[3])
 
-    mls_lang = LANG_MAP[lang]
+    with open("params.yaml") as f:
+        params = yaml.safe_load(f)
+
+    n_utterances = params["n_utterances"]
+    seed = params["seed"]
+    mls_name = params["languages"][lang]["mls_name"]
+
     out_wav_dir = Path(f"data/raw/{lang}/wav")
     out_wav_dir.mkdir(parents=True, exist_ok=True)
     manifest_path = Path(f"data/manifests/{lang}/clean.jsonl")
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
 
-    print(f"Loading test split for {mls_lang}...")
+    print(f"Loading test split for {mls_name}...")
     ds = load_dataset(
         "parquet",
-        data_files=f"hf://datasets/facebook/multilingual_librispeech/{mls_lang}/test-*.parquet",
+        data_files=f"hf://datasets/facebook/multilingual_librispeech/{mls_name}/test-*.parquet",
         split="train",
     )
     ds = ds.shuffle(seed=seed).select(range(min(n_utterances, len(ds))))

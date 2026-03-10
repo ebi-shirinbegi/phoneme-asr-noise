@@ -1,6 +1,10 @@
 languages:
-  - fr
-  - de
+  fr:
+    mls_name: french
+    espeak_voice: fr-fr
+  de:
+    mls_name: german
+    espeak_voice: de
 
 snr_levels:
   - 30
